@@ -1,6 +1,6 @@
 // src/components/Hero.js
 import { Button } from "./ui/button";
-import { Search } from "lucide-react";          // <-- NEW
+import { Search } from "lucide-react";
 import heroImage from "../assets/hero-image.jpg";
 
 const scrollToCategories = (e: React.MouseEvent<HTMLButtonElement>) => {
