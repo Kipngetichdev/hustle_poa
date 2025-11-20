@@ -1,6 +1,6 @@
 // src/data/products.js
 import pdfBusiness from "../assets/pdf-business.jpg";
-import pdfExitPlan from "../assets/pdf-exit-plan.jpg";
+import pdfExitPlan from "../assets/pdf-exit-plan.png";
 import pdfSideHustles from "../assets/pdf-side-hustles.jpg";
 
 import img1 from "../assets/pdf-mpesa-business.jpg";
