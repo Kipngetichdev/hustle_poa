@@ -89,14 +89,14 @@ const Header = () => {
               >
                 Contact
               </a>
-              <div className="flex flex-col gap-2 pt-2">
+              {/* <div className="flex flex-col gap-2 pt-2">
                 <Button variant="ghost" className="font-semibold w-full">
                   Login
                 </Button>
                 <Button className="bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-[var(--accent-foreground)] font-semibold w-full">
                   Sign Up
                 </Button>
-              </div>
+              </div> */}
             </div>
           </nav>
         )}

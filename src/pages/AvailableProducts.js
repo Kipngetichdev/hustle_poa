@@ -1,21 +1,38 @@
 // src/pages/AvailableProducts.js
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardFooter } from "../components/ui/card";
-import { ShoppingCart } from "lucide-react"; // ← Add this import
+import { Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // ← ADD THIS
 import { products } from "../data/products";
 
 const AvailableProducts = () => {
+  const navigate = useNavigate(); // ← NOW DEFINED
+
   return (
     <section className="py-12 md:py-24">
-      <div className="container mx-auto px- 4">
-        {/* Header */}
-        <div className="text-center mb-10 md:mb-12">
-          <h1 className="text-3xl md:text-5xl font-bold text-[var(--foreground)] mb-3">
-            All Hustle Guides
+      <div className="container mx-auto px-4">
+        {/* Premium Header */}
+        <div className="text-center mb-20 md:mb-28">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-[var(--foreground)] tracking-tighter leading-none mb-6">
+            <span className="block">All Hustle</span>
+            <span className="block text-[var(--primary)]">Guides</span>
           </h1>
-          <p className="text-base md:text-xl text-[var(--muted-foreground)] max-w-3xl mx-auto leading-relaxed">
-            20 premium PDF guides to start, grow, and scale your Kenyan hustle — from M-Pesa to Poultry, Mitumba to Mobile Apps.
+
+          <p className="text-xl md:text-2xl lg:text-3xl text-[var(--muted-foreground)] font-medium max-w-5xl mx-auto leading-relaxed px-4">
+            <span className="inline-block bg-gradient-to-r from-[var(--accent)] to-yellow-500 bg-clip-text text-transparent font-bold">
+              20 premium PDF guides
+            </span>{" "}
+            built to help you{" "}
+            <span className="font-bold text-[var(--primary)]">start, grow, and scale</span> your Kenyan hustle — 
+            <br className="hidden md:block" />
+            <span className="text-[var(--accent)] font-extrabold">
+              from M-Pesa businesses to Poultry farming, Mitumba to Mobile Apps.
+            </span>
           </p>
+
+          <div className="flex justify-center mt-10">
+            <div className="h-1.5 w-32 bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent rounded-full" />
+          </div>
         </div>
 
         {/* Responsive Grid */}
@@ -23,14 +40,14 @@ const AvailableProducts = () => {
           {products.map((product) => (
             <Card
               key={product.id}
-              className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-[var(--border)] flex flex-col"
+              className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-[var(--border)] flex flex-col group"
             >
               {/* Image */}
               <div className="aspect-[3/4] overflow-hidden bg-[var(--secondary)]">
                 <img
                   src={product.image}
                   alt={product.title}
-                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
 
@@ -52,11 +69,14 @@ const AvailableProducts = () => {
                 </div>
               </CardContent>
 
-              {/* Footer – Buy Now + Cart Icon */}
+              {/* Fixed: Now navigates to product detail page */}
               <CardFooter className="p-4 md:p-6 pt-0 mt-auto">
-                <Button className="w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white font-bold text-sm md:text-lg py-4 md:py-6 rounded-[4px] flex items-center justify-center gap-2">
-                  <span>Buy Now</span>
-                  <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
+                <Button 
+                  onClick={() => navigate(`/product/${product.id}`)}
+                  className="w-full bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white font-bold text-sm md:text-lg py-4 md:py-6 rounded-[4px] flex items-center justify-center gap-2.5 group"
+                >
+                  <span>View PDF</span>
+                  <Eye className="w-5 h-5 md:w-6 md:h-6 group-hover:scale-110 transition-transform duration-200" />
                 </Button>
               </CardFooter>
             </Card>

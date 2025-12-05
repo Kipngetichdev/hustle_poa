@@ -1,21 +1,22 @@
 // src/components/Hero.js
 import { Button } from "./ui/button";
-import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // ← ADD THIS LINE
 import heroImage from "../assets/hero-image.jpg";
 
-const scrollToCategories = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-  const target = document.querySelector("#categories");
-  if (target) {
-    target.scrollIntoView({ behavior: "smooth" });
-  }
-};
-
 const Hero = () => {
+  const navigate = useNavigate(); // ← NOW DEFINED
+
+  const scrollToCategories = () => {
+    const target = document.querySelector("#categories");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <section className="hero-gradient py-16 md:py-24">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center"> 
+        <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--foreground)] leading-tight">
@@ -26,23 +27,23 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              {/* Featured PDFs → scroll to #categories */}
+              {/* Scroll to Featured */}
               <Button
                 size="lg"
                 onClick={scrollToCategories}
-                className="bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-[var(--primary-foreground)] font-semibold text-lg px-8"
+                className="bg-[var(--primary)] hover:bg-[var(--primary)]/90 text-white font-semibold text-lg px-8 rounded-lg shadow-lg"
               >
                 See Featured PDFs
               </Button>
 
-              {/* Search Top PDFs – with icon after text */}
+              {/* Navigate to All Products */}
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-[var(--foreground)] text-[var(--foreground)] hover:bg-[var(--foreground)] hover:text-[var(--background)] font-semibold text-lg px-8 flex items-center gap-2"
+                onClick={() => navigate("/all-products")}
+                className="border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white font-semibold px-8 py-5 rounded-lg transition-all"
               >
-                Search Top PDFs
-                <Search className="h-5 w-5" />
+                View All 20 Guides
               </Button>
             </div>
           </div>
@@ -52,7 +53,7 @@ const Hero = () => {
             <img
               src={heroImage}
               alt="Person planning their hustle with digital guides"
-              className="rounded-lg shadow-2xl w-full h-auto"
+              className="rounded-2xl shadow-2xl w-full h-auto border border-[var(--border)]"
             />
           </div>
         </div>
