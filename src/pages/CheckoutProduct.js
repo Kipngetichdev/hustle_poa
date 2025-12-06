@@ -49,7 +49,7 @@ const CheckoutProduct = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phoneNumber: `0${phoneNumber}`,
-          amount: 1,
+          amount: parseInt(product.price.replace("KES ", "")),
           reference: clientRef,
         }),
       });
