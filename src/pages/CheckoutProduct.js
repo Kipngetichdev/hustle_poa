@@ -1,4 +1,4 @@
-// src/pages/CheckoutProduct.js — FINAL & 100% WORKING (REAL M-PESA)
+// src/pages/CheckoutProduct.js — FINAL + ENHANCED POLLING WITH LOGGING
 import { Button } from "../components/ui/button";
 import { ArrowLeft, CheckCircle, Lock, Phone, User, Download, Clock } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ const CheckoutProduct = () => {
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [errors, setErrors] = useState({});
-  const [payheroReference, setHeroReference] = useState(null); // PayHero's real reference
+  const [payheroReference, setHeroReference] = useState(null);
 
   const product = products.find(p => p.id === parseInt(id));
 
@@ -49,33 +49,29 @@ const CheckoutProduct = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phoneNumber: `0${phoneNumber}`,
-          amount: parseInt(product.price.replace("KES ", "")),
+          amount: 1,
           reference: clientRef,
         }),
       });
 
       const data = await res.json();
+      console.log("PayHero STK Response:", data);
 
-      // LOG FOR DEBUG (remove in production if you want)
-      console.log("PayHero Response:", data);
-
-      // FIXED: Accept ANY reference PayHero returns
       const payheroRef = data.reference || data.payheroReference || data.payheroRef;
 
       if (!data.success || !payheroRef) {
         toast.error(data.error || "Payment failed. Please try again.", {
-          icon: "Failed",
+          icon: "❌",
           style: { background: "#ef4444", color: "white" },
         });
         setIsProcessing(false);
         return;
       }
 
-      // SUCCESS: Save the real PayHero reference
       setHeroReference(payheroRef);
 
       toast.success("STK Push sent! Please approve on your phone.", {
-        icon: "Sent",
+        icon: "📱",
         duration: 10000,
         style: {
           background: "#10b981",
@@ -87,67 +83,109 @@ const CheckoutProduct = () => {
         },
       });
 
-      // POLLING — SAME AS YOUR WORKING ActivateAccount.js
+      // ENHANCED POLLING WITH DETAILED LOGGING
       const checkPaymentStatus = async (ref) => {
-        try {
-          const statusRes = await fetch(`/api/status?reference=${ref}`);
-          const statusData = await statusRes.json();
+        // console.log(
+        //   `%c🚀 POLLING STARTED → Reference: ${ref}`,
+        //   "background: #006A4E; color: white; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 13px;"
+        // );
 
-          if (statusData.status === "SUCCESS") {
-            setIsProcessing(false);
-            setIsSuccess(true);
+        const poll = async () => {
+          const timestamp = new Date().toLocaleTimeString("en-KE", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
 
-            toast.success("Payment successful! Your guide is downloading now...", {
-              icon: "Success",
-              duration: 10000,
-              style: { background: "#10b981", color: "white", fontSize: "20px", fontWeight: "bold" },
-            });
+          // console.log(
+          //   `%c🕒 [${timestamp}] Polling status for → ${ref}`,
+          //   "color: #F9C80E; font-weight: bold; font-size: 12px;"
+          // );
 
-            // DOWNLOAD PDF
-            const link = document.createElement("a");
-            link.href = product.pdf;
-            link.download = `${product.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+          try {
+            const statusRes = await fetch(`/api/transaction-status?reference=${ref}`);
+            const statusData = await statusRes.json();
 
-            // Reset form
-            setTimeout(() => {
-              setFullName("");
-              setPhoneNumber("");
-            }, 3000);
-          } else if (["CANCELLED", "FAILED"].includes(statusData.status)) {
-            setIsProcessing(false);
-            toast.error("Payment cancelled or failed.", { icon: "Failed" });
-          } else {
-            // Still pending — poll again in 2 seconds
-            setTimeout(() => checkPaymentStatus(ref), 2000);
+            // console.log(
+            //   `%c📊 Response: ${statusData.status || "NO_STATUS"}`,
+            //   statusData.status === "SUCCESS"
+            //     ? "color: #10b981; background: #ecfdf5; padding: 2px 8px; border-radius: 4px;"
+            //     : statusData.status === "FAILED" || statusData.status === "CANCELLED"
+            //     ? "color: #ef4444; background: #fee2e2; padding: 2px 8px; border-radius: 4px;"
+            //     : "color: #f59e0b; background: #fff7ed; padding: 2px 8px; border-radius: 4px;"
+            // );
+
+            if (statusData.status === "SUCCESS") {
+              // console.log("%c🎉 PAYMENT SUCCESSFUL! Triggering download...", "color: #10b981; font-size: 16px; font-weight: bold;");
+              
+              setIsProcessing(false);
+              setIsSuccess(true);
+
+              toast.success("Payment successful! Your guide is downloading now...", {
+                icon: "🎉",
+                duration: 8000,
+                style: { background: "#10b981", color: "white", fontSize: "20px", fontWeight: "bold" },
+              });
+
+              // Auto Download
+              const link = document.createElement("a");
+              link.href = product.pdf;
+              link.download = `${product.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+
+              // console.log("%c📥 Download triggered successfully!", "color: #006A4E; font-weight: bold;");
+
+              setTimeout(() => {
+                setFullName("");
+                setPhoneNumber("");
+              }, 3000);
+
+              return;
+            }
+
+            if (["CANCELLED", "FAILED"].includes(statusData.status)) {
+              console.log("%c❌ Payment failed or cancelled by user", "color: #ef4444; font-weight: bold;");
+              setIsProcessing(false);
+              toast.error("Payment cancelled or failed.", { icon: "❌" });
+              return;
+            }
+
+            console.log("%c⏳ Still pending → retrying in 2 seconds...", "color: #6366f1; font-style: italic;");
+            setTimeout(poll, 2000);
+
+          } catch (err) {
+            console.error("%c🚨 Network error during polling:", "color: #ef4444;", err);
+            console.log("%c🔄 Retrying in 5 seconds...", "color: #f59e0b;");
+            setTimeout(poll, 5000);
           }
-        } catch (err) {
-          console.error("Polling error:", err);
-          setTimeout(() => checkPaymentStatus(ref), 5000);
-        }
+        };
+
+        poll();
       };
 
       // Start polling
       checkPaymentStatus(payheroRef);
 
-      // Timeout after 5 minutes
+      // 5-minute timeout fallback
       setTimeout(() => {
         if (!isSuccess) {
+          console.log("%c⏰ 5-minute timeout reached", "color: #dc2626; font-weight: bold;");
           setIsProcessing(false);
-          toast.error("Payment timed out. Please try again.", { icon: "Timeout" });
+          toast.error("Payment timed out. Please try again.", { icon: "⏰" });
         }
       }, 300000);
 
     } catch (err) {
-      toast.error("Network error. Check your connection.", { icon: "Error" });
+      console.error("STK Push failed:", err);
+      toast.error("Network error. Check your connection.", { icon: "🌐" });
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-100 pt-16 pb-32">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-16 pb-32">
       <div className="container mx-auto px-4 max-w-2xl">
         <button
           onClick={() => navigate(-1)}
@@ -257,7 +295,7 @@ const CheckoutProduct = () => {
               ) : isSuccess ? (
                 <>
                   <CheckCircle className="w-6 h-6" />
-                  Payment Successful!
+                  Payment Successful! 🎉
                 </>
               ) : (
                 <>
